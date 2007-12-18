@@ -1,8 +1,10 @@
 %       cmfubook.sty    coded by YIN Dian
 %       Provide \cmfuinput to include a raw .txt file for novels downloaded
-%       from cmfu.com. Work under XeLaTeX only.
+%       from cmfu.com. 
 %       Hist:   071215  First coded. Title extracted and end-of-file-ads
-%                       removed.
+%                       removed. Completed section handling. Fixed toc bug
+%                       caused by \XeTeXdefaultencoding. Advertisements
+%                       removed. Works well under XeLaTeX.
 \NeedsTeXFormat{LaTeX2e}[1996/12/01]
 \def\filedate{2007/12/18}
 \ProvidesPackage{cmfubook}[\filedate]
@@ -17,6 +19,7 @@
 \newif\ifcmfu@result
 \def\cmfu@lastline{}
 \def\cmfu@currline{}
+\newcommand\cmfuupdate[1]{\begingroup\small #1\endgroup\par\medskip}
 
 \def\cmfu@amp#1;{
   \&#1;
@@ -46,6 +49,50 @@
   \else
     \cmfu@resulttrue
   \fi
+}
+\def\cmfu@testqdzwwsqfb#1起#2点#3中#4文#5网#6授权发#7\@nil{
+  \if!#7!
+    \cmfu@resultfalse
+  \else
+    \cmfu@resulttrue
+  \fi
+}
+\def\cmfu@testqdzww#1起#2点#3中#4文#5#6#7网#8\@nil{
+  \if!#6!
+    \cmfu@resultfalse
+  \else
+    \if!#7!
+      \cmfu@resulttrue
+    \else
+      \cmfu@resultfalse
+    \fi
+  \fi
+}
+\def\cmfu@testhsjzcmfu#1好书尽在www.cmfu.#2\@nil{
+  \if!#2!
+    \cmfu@resultfalse
+  \else
+    \cmfu@resulttrue
+  \fi
+}
+\def\cmfu@stripqdzwwsqfb#1起#2点#3中#4文#5网#6授权发布#7\@nil{#1#7}
+\def\cmfu@stripqdzww#1起#2点#3中#4文#5#6#7网#8\@nil{#1#8}
+\def\cmfu@striphsjzcmfu#1好书尽在www.cmfu.com#2\@nil{#1#2}
+\def\cmfu@stripads#1{
+  \edef\cmfu@tmp{#1}
+  \expandafter\cmfu@testqdzwwsqfb\cmfu@tmp 起8K点8K中8K文8K网8K授权发\@nil
+  \ifcmfu@result
+    \edef\cmfu@tmp{\expandafter\cmfu@stripqdzwwsqfb\cmfu@tmp\@nil}
+  \fi
+  \expandafter\cmfu@testqdzww\cmfu@tmp 起8K点8K中8K文aaaa网\@nil
+  \ifcmfu@result
+    \edef\cmfu@tmp{\expandafter\cmfu@stripqdzww\cmfu@tmp\@nil}
+  \fi
+  \expandafter\cmfu@testhsjzcmfu\cmfu@tmp 好书尽在www.cmfu.\@nil
+  \ifcmfu@result
+    \edef\cmfu@tmp{\expandafter\cmfu@striphsjzcmfu\cmfu@tmp\@nil}
+  \fi
+  \edef#1{\cmfu@tmp}
 }
 {\catcode`\^^M=12
 \gdef\cmfu@newline#1^^M{
@@ -91,11 +138,15 @@
     \begingroup
       \everypar{}
       \expandafter\section\expandafter{\cmfu@lastline}
+      \cmfu@stripads\cmfu@currline
+      \expandafter\cmfuupdate\expandafter{\cmfu@currline}\par
     \endgroup
+    \def\cmfu@currline{}
   \else
     \cmfu@lastline\par
   \fi
   %\immediate\write16{Last line: \cmfu@lastline}
+  \cmfu@stripads\cmfu@currline
   \edef\cmfu@lastline{\cmfu@currline}
 }
 
