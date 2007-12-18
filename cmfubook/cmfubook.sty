@@ -124,17 +124,19 @@
   \cmfu@setcatcode
   \immediate\write16{Start parsing file...}
   \input #1
+  \XeTeXdefaultencoding "utf-8"
   \endgroup
 }
 
 \def\cmfu@settitle#1{\title{#1}
   \maketitle
-  %\endgroup\maketitle\vfil
-  %\tableofcontents\begingroup
-  %\XeTeXdefaultencoding "cp936"
-  %\endlinechar=`\^^M
-  %\cmfu@setcatcode
-  %\immediate\write16{Done generating title and toc}
+  \XeTeXdefaultencoding "utf-8"
+  \endgroup\maketitle\vfil
+  \tableofcontents\vfil\newpage\begingroup
+  \XeTeXdefaultencoding "cp936"
+  \endlinechar=`\^^M
+  \cmfu@setcatcode
+  \immediate\write16{Done generating title and toc}
 }
 
 \endinput
