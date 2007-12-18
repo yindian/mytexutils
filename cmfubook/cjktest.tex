@@ -7,8 +7,8 @@
 \XeTeXinputencoding "cp936"
 \else
 \usepackage{CJK, CJKpunct}
-\usepackage[CJKbookmarks]{hyperref}
-\AtBeginDvi{\special{pdf:tounicode GBK-EUC-UCS2}}
+\usepackage[CJKbookmarks,dvipdfm]{hyperref}
+\AtBeginDvi{\special{pdf: tounicode GBK-EUC-UCS2}}
 \AtBeginDocument{\begin{CJK*}{GBK}{song}}
 \AtEndDocument{\clearpage\end{CJK*}}
 \begin{CJK*}{GBK}{song}

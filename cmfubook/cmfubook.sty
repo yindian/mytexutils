@@ -6,7 +6,8 @@
 %                       caused by \XeTeXdefaultencoding. Advertisements
 %                       removed. Works well under XeLaTeX. Changed source to
 %                       work under LaTeX+CJK. Wooooooph, wonderful.
-%                       Added html special (&) handling. 
+%                       Added html special (&) handling. Use \cmfu@start to
+%                       avoid empty first page when use LaTeX+CJK.
 \NeedsTeXFormat{LaTeX2e}[1996/12/01]
 \def\filedate{2007/12/18}
 \ProvidesPackage{cmfubook}[\filedate]
@@ -41,7 +42,8 @@
 \gdef\cmfu@langle#1>#2</#3>{
   #2
 }}
-\def\cmfu@lbrack#1/#2]{\cmfu@settitle{#1}\@makeother\[\cmfu@newline}%\cmfu@seteverypar}
+%\def\cmfu@lbrack#1/#2]{\cmfu@settitle{#1}\@makeother\[\cmfu@newline}%\cmfu@seteverypar}
+\def\cmfu@start#1[#2/#3]{\cmfu@settitle{#2}\@makeother\[\cmfu@newline}%\cmfu@seteverypar}
 \def\cmfu@stripads#1{
   \let\cmfu@tmp=#1
   \expandafter\cmfu@testqdzwwsqfb\cmfu@tmp 起8K点8K中8K文8K网8K授权发\@nil
@@ -119,9 +121,9 @@
   \let\cmfu@lastline\cmfu@currline
 }
 
-\def\cmfu@seteverypar{
-  \everypar{\cmfu@newline}
-}
+%\def\cmfu@seteverypar{
+%  \everypar{\cmfu@newline}
+%}
 
 \def\cmfu@setcatcode{\let\do\@makeother\dospecials
   \count@=\lccode`\~
@@ -135,8 +137,8 @@
   \ifxetex
     \catcode`\　=10% make fullwidth space space
   \fi
-  \catcode`\[=\active \lccode`\~=`\[
-  \lowercase{\let~=\cmfu@lbrack}
+  %\catcode`\[=\active \lccode`\~=`\[
+  %\lowercase{\let~=\cmfu@lbrack}
 }
 
 \newcommand{\cmfuinput}[1]{
@@ -147,7 +149,8 @@
   \endlinechar=`\^^M
   \cmfu@setcatcode
   \immediate\write16{Start parsing file...}
-  \input #1
+  \expandafter\cmfu@start
+  \@@input #1
   \ifxetex
     \XeTeXdefaultencoding "utf-8"
   \fi
