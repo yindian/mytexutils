@@ -7,7 +7,8 @@
 %                       removed. Works well under XeLaTeX. Changed source to
 %                       work under LaTeX+CJK. Wooooooph, wonderful.
 %                       Added html special (&) handling. Use \cmfu@start to
-%                       avoid empty first page when use LaTeX+CJK.
+%                       avoid empty first page when use LaTeX+CJK. Several bug
+%                       fixed (\expandafter, \catcode when \tableofcontents).
 \NeedsTeXFormat{LaTeX2e}[1996/12/01]
 \def\filedate{2007/12/18}
 \ProvidesPackage{cmfubook}[\filedate]
@@ -48,16 +49,16 @@
   \let\cmfu@tmp=#1
   \expandafter\cmfu@testqdzwwsqfb\cmfu@tmp 起8K点8K中8K文8K网8K授权发\@nil
   \ifcmfu@result
-    \expandafter\def\expandafter\cmfu@tmp\expandafter{\expandafter\cmfu@stripqdzwwsqfb\cmfu@tmp\@nil}
+    \expandafter\expandafter\expandafter\def\expandafter\expandafter\expandafter\cmfu@tmp\expandafter\expandafter\expandafter{\expandafter\cmfu@stripqdzwwsqfb\cmfu@tmp\@nil}
   \fi
   \expandafter\cmfu@testqdzww\cmfu@tmp 起8K点8K中8K文aaaa网\@nil
   \ifcmfu@result
-    \expandafter\def\expandafter\cmfu@tmp\expandafter{\expandafter\cmfu@stripqdzww\cmfu@tmp\@nil}
+    \expandafter\expandafter\expandafter\def\expandafter\expandafter\expandafter\cmfu@tmp\expandafter\expandafter\expandafter{\expandafter\cmfu@stripqdzww\cmfu@tmp\@nil}
     %\edef\cmfu@tmp{\expandafter\cmfu@stripqdzww\cmfu@tmp\@nil}
   \fi
   \expandafter\cmfu@testhsjzcmfu\cmfu@tmp 好书尽在www.cmfu.\@nil
   \ifcmfu@result
-    \expandafter\def\expandafter\cmfu@tmp\expandafter{\expandafter\cmfu@striphsjzcmfu\cmfu@tmp\@nil}
+    \expandafter\expandafter\expandafter\def\expandafter\expandafter\expandafter\cmfu@tmp\expandafter\expandafter\expandafter{\expandafter\cmfu@striphsjzcmfu\cmfu@tmp\@nil}
     %\edef\cmfu@tmp{\expandafter\cmfu@striphsjzcmfu\cmfu@tmp\@nil}
   \fi
   \let#1\cmfu@tmp
@@ -162,8 +163,15 @@
   \ifxetex
     \XeTeXdefaultencoding "utf-8"
   \fi
-  \endgroup\maketitle\vfil
-  \tableofcontents\vfil\newpage\begingroup
+  \endgroup\begingroup
+  \maketitle\vfil
+  \let\do\@makeother\dospecials
+  \catcode`\ =10
+  \catcode`\\=0
+  \catcode`\{=1
+  \catcode`\}=2
+  \tableofcontents\vfil\newpage
+  \endgroup\begingroup
   \ifxetex
     \XeTeXdefaultencoding "cp936"
   \fi
