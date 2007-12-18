@@ -6,6 +6,7 @@
 %                       caused by \XeTeXdefaultencoding. Advertisements
 %                       removed. Works well under XeLaTeX. Changed source to
 %                       work under LaTeX+CJK. Wooooooph, wonderful.
+%                       Added html special (&) handling. 
 \NeedsTeXFormat{LaTeX2e}[1996/12/01]
 \def\filedate{2007/12/18}
 \ProvidesPackage{cmfubook}[\filedate]
@@ -22,8 +23,19 @@
 \def\cmfu@currline{}
 \newcommand\cmfuupdate[1]{\begingroup\small #1\endgroup\par\medskip}
 
-\def\cmfu@amp#1;{
-  \&#1;
+{\@makeother\#\global\let\cmfu@sharp=#}
+\def\cmfu@amp#1#2;{
+  %\&#1#2;
+  \ifx #1\cmfu@sharp
+    \ifxetex
+      \message{char #2}
+      \char#2
+    \else
+      \&#1#2;
+    \fi
+  \else
+    \cmfu@htmlspec{#1#2}
+  \fi
 }
 {\catcode`\<=\active
 \gdef\cmfu@langle#1>#2</#3>{
@@ -75,7 +87,7 @@
         \ifcmfu@result % current line contains 本书已获作者授权在起点
           \catcode`\^^M=5
           \immediate\write16{The cmfu file ended}
-	  \let\cmfu@next\relax
+          \let\cmfu@next\relax
           \endinput
         \else
           \cmfu@processline
@@ -206,5 +218,36 @@
 \def\cmfu@stripqdzwwsqfb#1起#2点#3中#4文#5网#6授权发布#7\@nil{#1#7}
 \def\cmfu@stripqdzww#1起#2点#3中#4文#5#6#7网#8\@nil{#1#8}
 \def\cmfu@striphsjzcmfu#1好书尽在www.cmfu.com#2\@nil{#1#2}
+
+\def\cmfu@defhtmlspec#1{\@namedef{cmfu@html@#1}{#1}}
+\cmfu@defhtmlspec{amp}
+\cmfu@defhtmlspec{lt}
+\cmfu@defhtmlspec{gt}
+\cmfu@defhtmlspec{quot}
+\cmfu@defhtmlspec{nbsp}
+\def\cmfu@htmlspec#1{
+  \def\cmfu@tmp{#1}
+  \ifx\cmfu@tmp\cmfu@html@amp
+    \&
+  \else
+    \ifx\cmfu@tmp\cmfu@html@lt
+      $\m@th<$
+    \else
+      \ifx\cmfu@tmp\cmfu@html@gt
+        $\m@th>$
+      \else
+        \ifx\cmfu@tmp\cmfu@html@quot
+          "
+        \else
+          \ifx\cmfu@tmp\cmfu@html@nbsp
+            \space
+          \else
+            \&\##1;
+          \fi
+        \fi
+      \fi
+    \fi
+  \fi
+}
 
 \endinput
