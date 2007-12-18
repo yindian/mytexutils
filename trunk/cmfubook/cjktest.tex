@@ -1,0 +1,25 @@
+\documentclass[oneside]{article}
+\ifdefined\XeTeXrevision
+\usepackage{zhspacing}
+\zhspacing
+\usepackage{zhfont}
+\usepackage{hyperref}
+\XeTeXinputencoding "cp936"
+\else
+\usepackage{CJK, CJKpunct}
+\usepackage[CJKbookmarks]{hyperref}
+\AtBeginDvi{\special{pdf:tounicode GBK-EUC-UCS2}}
+\AtBeginDocument{\begin{CJK*}{GBK}{song}}
+\AtEndDocument{\clearpage\end{CJK*}}
+\begin{CJK*}{GBK}{song}
+\end{CJK*}
+\setlength{\parindent}{0pt}
+\fi
+\usepackage{indentfirst}
+\usepackage{cmfubook}
+\setlength{\parskip}{0.2em plus 0.3em minus 0.2em}
+\begin{document}
+\author{起点中文网}
+%\tracingall
+\cmfuinput{ novel.txt }
+\end{document}
