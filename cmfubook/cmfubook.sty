@@ -40,42 +40,64 @@
     \cmfu@resulttrue
   \fi
 }
+\def\cmfu@testupdatetime#1网更新时间：#2\@nil{
+  \if!#2!
+    \cmfu@resultfalse
+  \else
+    \cmfu@resulttrue
+  \fi
+}
 {\catcode`\^^M=12
 \gdef\cmfu@newline#1^^M{
   %#1\par
-  \ifx\cmfu@lastline\empty
-    \if!#1!
-    \else
-      \def\cmfu@lastline{#1}
+  \if!#1!% empty
+    \ifhmode
+      \vskip -\baselineskip
+      \vskip -\parskip
     \fi
-    %\leavevmode\par
-    \vskip 0pt\relax
-    %\message{empty}
-    %\expandafter\cmfu@newline
   \else
-    \expandafter\cmfu@testcopyright\cmfu@lastline Copyright\@nil
-    \ifcmfu@result % last line contains Copyright
-      \immediate\write16{Copyright encountered}
-      \def\cmfu@currline{#1}
-      \immediate\write16{Last line: \cmfu@lastline}
-      \immediate\write16{Current Line: \cmfu@currline}
-      \expandafter\cmfu@testrightgrant\cmfu@currline 本书已获作者授权在起点\@nil
-      \ifcmfu@result % current line contains 本书已获作者授权在起点
-        \catcode`\^^M=5
-        \immediate\write16{The cmfu file ended}
-        \endinput
-      \else
-        \cmfu@lastline\par
-        %\immediate\write16{Last line: \cmfu@lastline}
-        \edef\cmfu@lastline{\cmfu@currline}
+    \ifx\cmfu@lastline\empty
+        \def\cmfu@lastline{#1}
+      %\leavevmode\par
+      \ifhmode
+        \vskip -\baselineskip
+        \vskip -\parskip
       \fi
+      %\message{empty}
     \else
-      \cmfu@lastline\par
-      %\immediate\write16{Last line: \cmfu@lastline}
-      \def\cmfu@lastline{#1}
+      \def\cmfu@currline{#1}
+      \expandafter\cmfu@testcopyright\cmfu@lastline Copyright\@nil
+      \ifcmfu@result % last line contains Copyright
+        \immediate\write16{Copyright encountered}
+        \expandafter\cmfu@testrightgrant\cmfu@currline 本书已获作者授权在起点\@nil
+        \ifcmfu@result % current line contains 本书已获作者授权在起点
+          \catcode`\^^M=5
+          \immediate\write16{The cmfu file ended}
+          \endinput
+        \else
+          \cmfu@processline
+        \fi
+      \else
+        \cmfu@processline
+      \fi
     \fi
   \fi
 }}
+
+\def\cmfu@processline{
+  %\cmfu@lastline\par
+  \expandafter\cmfu@testupdatetime\cmfu@currline 网更新时间：\@nil
+  \ifcmfu@result % new section
+    \begingroup
+      \everypar{}
+      \expandafter\section\expandafter{\cmfu@lastline}
+    \endgroup
+  \else
+    \cmfu@lastline\par
+  \fi
+  %\immediate\write16{Last line: \cmfu@lastline}
+  \edef\cmfu@lastline{\cmfu@currline}
+}
 
 \def\cmfu@seteverypar{
   \everypar{\cmfu@newline}
@@ -96,14 +118,23 @@
 }
 
 \newcommand{\cmfuinput}[1]{
-\begingroup
-\XeTeXdefaultencoding "cp936"
-\endlinechar=`\^^M
-\cmfu@setcatcode
-\input #1
-\endgroup
+  \begingroup
+  \XeTeXdefaultencoding "cp936"
+  \endlinechar=`\^^M
+  \cmfu@setcatcode
+  \immediate\write16{Start parsing file...}
+  \input #1
+  \endgroup
 }
 
-\def\cmfu@settitle#1{\title{#1}\maketitle}
+\def\cmfu@settitle#1{\title{#1}
+  \maketitle
+  %\endgroup\maketitle\vfil
+  %\tableofcontents\begingroup
+  %\XeTeXdefaultencoding "cp936"
+  %\endlinechar=`\^^M
+  %\cmfu@setcatcode
+  %\immediate\write16{Done generating title and toc}
+}
 
 \endinput
