@@ -1,0 +1,109 @@
+%       cmfubook.sty    coded by YIN Dian
+%       Provide \cmfuinput to include a raw .txt file for novels downloaded
+%       from cmfu.com. Work under XeLaTeX only.
+%       Hist:   071215  First coded. Title extracted and end-of-file-ads
+%                       removed.
+\NeedsTeXFormat{LaTeX2e}[1996/12/01]
+\def\filedate{2007/12/18}
+\ProvidesPackage{cmfubook}[\filedate]
+\RequirePackage{zhspacing}
+\zhspacing
+\RequirePackage{zhfont}
+\XeTeXinputencoding "cp936"
+\endlinechar=-1
+%\DeclareOption{}{}
+%\ProcessOptions\relax
+
+\newif\ifcmfu@result
+\def\cmfu@lastline{}
+\def\cmfu@currline{}
+
+\def\cmfu@amp#1;{
+  \&#1;
+}
+{\catcode`\<=\active
+\gdef\cmfu@langle#1>#2</#3>{
+  #2
+}}
+\def\cmfu@lbrack#1/#2]{\cmfu@settitle{#1}\@makeother\[\cmfu@seteverypar}
+\def\cmfu@testcopyright#1Copyright#2\@nil{
+  \if!#2!
+    \cmfu@resultfalse
+  \else
+    \cmfu@resulttrue
+  \fi
+}
+\def\cmfu@testrightgrant#1本书已获作者授权在起点#2\@nil{
+  \if!#2!
+    \cmfu@resultfalse
+  \else
+    \cmfu@resulttrue
+  \fi
+}
+{\catcode`\^^M=12
+\gdef\cmfu@newline#1^^M{
+  %#1\par
+  \ifx\cmfu@lastline\empty
+    \if!#1!
+    \else
+      \def\cmfu@lastline{#1}
+    \fi
+    %\leavevmode\par
+    \vskip 0pt\relax
+    %\message{empty}
+    %\expandafter\cmfu@newline
+  \else
+    \expandafter\cmfu@testcopyright\cmfu@lastline Copyright\@nil
+    \ifcmfu@result % last line contains Copyright
+      \immediate\write16{Copyright encountered}
+      \def\cmfu@currline{#1}
+      \immediate\write16{Last line: \cmfu@lastline}
+      \immediate\write16{Current Line: \cmfu@currline}
+      \expandafter\cmfu@testrightgrant\cmfu@currline 本书已获作者授权在起点\@nil
+      \ifcmfu@result % current line contains 本书已获作者授权在起点
+        \catcode`\^^M=5
+        \immediate\write16{The cmfu file ended}
+        \endinput
+      \else
+        \cmfu@lastline\par
+        %\immediate\write16{Last line: \cmfu@lastline}
+        \edef\cmfu@lastline{\cmfu@currline}
+      \fi
+    \else
+      \cmfu@lastline\par
+      %\immediate\write16{Last line: \cmfu@lastline}
+      \def\cmfu@lastline{#1}
+    \fi
+  \fi
+}}
+
+\def\cmfu@seteverypar{
+  \everypar{\cmfu@newline}
+}
+
+\def\cmfu@setcatcode{\let\do\@makeother\dospecials
+  \count@=\lccode`\~
+  \catcode`\&=\active \lccode`\~=`\&
+  \lowercase{\let~=\cmfu@amp}
+  \catcode`\<=\active \lccode`\~=`\<
+  \lowercase{\let~=\cmfu@langle}
+  %\catcode`\^^M=\active \lccode`\~=`\^^M
+  %\lowercase{\let~=\cmfu@newline}
+  \@makeother\^^M
+  \catcode`\　=10% make fullwidth space space
+  \catcode`\[=\active \lccode`\~=`\[
+  \lowercase{\let~=\cmfu@lbrack}
+}
+
+\newcommand{\cmfuinput}[1]{
+\begingroup
+\XeTeXdefaultencoding "cp936"
+\endlinechar=`\^^M
+\cmfu@setcatcode
+\input #1
+\endgroup
+}
+
+\def\cmfu@settitle#1{\title{#1}\maketitle}
+
+\endinput
