@@ -1,17 +1,18 @@
 %       cmfubook.sty    coded by YIN Dian
 %       Provide \cmfuinput to include a raw .txt file for novels downloaded
 %       from cmfu.com. 
-%       Hist:   071215  First coded. Title extracted and end-of-file-ads
+%       Hist:   071218  First coded. Title extracted and end-of-file-ads
 %                       removed. Completed section handling. Fixed toc bug
 %                       caused by \XeTeXdefaultencoding. Advertisements
-%                       removed. Works well under XeLaTeX.
+%                       removed. Works well under XeLaTeX. Changed source to
+%                       work under LaTeX+CJK. Wooooooph, wonderful.
 \NeedsTeXFormat{LaTeX2e}[1996/12/01]
 \def\filedate{2007/12/18}
 \ProvidesPackage{cmfubook}[\filedate]
-\RequirePackage{zhspacing}
-\zhspacing
-\RequirePackage{zhfont}
-\XeTeXinputencoding "cp936"
+\RequirePackage{ifxetex}
+\ifxetex
+  \XeTeXinputencoding "cp936"
+\fi
 \endlinechar=-1
 %\DeclareOption{}{}
 %\ProcessOptions\relax
@@ -28,7 +29,134 @@
 \gdef\cmfu@langle#1>#2</#3>{
   #2
 }}
-\def\cmfu@lbrack#1/#2]{\cmfu@settitle{#1}\@makeother\[\cmfu@seteverypar}
+\def\cmfu@lbrack#1/#2]{\cmfu@settitle{#1}\@makeother\[\cmfu@newline}%\cmfu@seteverypar}
+\def\cmfu@stripads#1{
+  \let\cmfu@tmp=#1
+  \expandafter\cmfu@testqdzwwsqfb\cmfu@tmp 起8K点8K中8K文8K网8K授权发\@nil
+  \ifcmfu@result
+    \expandafter\def\expandafter\cmfu@tmp\expandafter{\expandafter\cmfu@stripqdzwwsqfb\cmfu@tmp\@nil}
+  \fi
+  \expandafter\cmfu@testqdzww\cmfu@tmp 起8K点8K中8K文aaaa网\@nil
+  \ifcmfu@result
+    \expandafter\def\expandafter\cmfu@tmp\expandafter{\expandafter\cmfu@stripqdzww\cmfu@tmp\@nil}
+    %\edef\cmfu@tmp{\expandafter\cmfu@stripqdzww\cmfu@tmp\@nil}
+  \fi
+  \expandafter\cmfu@testhsjzcmfu\cmfu@tmp 好书尽在www.cmfu.\@nil
+  \ifcmfu@result
+    \expandafter\def\expandafter\cmfu@tmp\expandafter{\expandafter\cmfu@striphsjzcmfu\cmfu@tmp\@nil}
+    %\edef\cmfu@tmp{\expandafter\cmfu@striphsjzcmfu\cmfu@tmp\@nil}
+  \fi
+  \let#1\cmfu@tmp
+}
+{\catcode`\^^M=12
+\gdef\cmfu@newline#1^^M{
+  %#1\par
+  \let\cmfu@next\cmfu@newline
+  \if!#1!% empty
+    \ifhmode
+      \vskip -\baselineskip
+      \vskip -\parskip
+    \fi
+  \else
+    \ifx\cmfu@lastline\empty
+        \def\cmfu@lastline{#1}
+      %\leavevmode\par
+      \ifhmode
+        \vskip -\baselineskip
+        \vskip -\parskip
+      \fi
+      %\message{empty}
+    \else
+      \def\cmfu@currline{#1}
+      \expandafter\cmfu@testcopyright\cmfu@lastline Copyright\@nil
+      \ifcmfu@result % last line contains Copyright
+        \immediate\write16{Copyright encountered}
+        \expandafter\cmfu@testrightgrant\cmfu@currline 本书已获作者授权在起点\@nil
+        \ifcmfu@result % current line contains 本书已获作者授权在起点
+          \catcode`\^^M=5
+          \immediate\write16{The cmfu file ended}
+	  \let\cmfu@next\relax
+          \endinput
+        \else
+          \cmfu@processline
+        \fi
+      \else
+        \cmfu@processline
+      \fi
+    \fi
+  \fi
+  \cmfu@next
+}}
+
+\def\cmfu@processline{
+  %\cmfu@lastline\par
+  \expandafter\cmfu@testupdatetime\cmfu@currline 网更新时间：\@nil
+  \ifcmfu@result % new section
+    \begingroup
+      \everypar{}
+      \expandafter\section\expandafter{\cmfu@lastline}
+      \cmfu@stripads\cmfu@currline
+      \expandafter\cmfuupdate\expandafter{\cmfu@currline}\par
+    \endgroup
+    \def\cmfu@currline{}
+  \else
+    \cmfu@lastline\par
+  \fi
+  %\immediate\write16{Last line: \cmfu@lastline}
+  \cmfu@stripads\cmfu@currline
+  \let\cmfu@lastline\cmfu@currline
+}
+
+\def\cmfu@seteverypar{
+  \everypar{\cmfu@newline}
+}
+
+\def\cmfu@setcatcode{\let\do\@makeother\dospecials
+  \count@=\lccode`\~
+  \catcode`\&=\active \lccode`\~=`\&
+  \lowercase{\let~=\cmfu@amp}
+  \catcode`\<=\active \lccode`\~=`\<
+  \lowercase{\let~=\cmfu@langle}
+  %\catcode`\^^M=\active \lccode`\~=`\^^M
+  %\lowercase{\let~=\cmfu@newline}
+  \@makeother\^^M
+  \ifxetex
+    \catcode`\　=10% make fullwidth space space
+  \fi
+  \catcode`\[=\active \lccode`\~=`\[
+  \lowercase{\let~=\cmfu@lbrack}
+}
+
+\newcommand{\cmfuinput}[1]{
+  \begingroup
+  \ifxetex
+    \XeTeXdefaultencoding "cp936"
+  \fi
+  \endlinechar=`\^^M
+  \cmfu@setcatcode
+  \immediate\write16{Start parsing file...}
+  \input #1
+  \ifxetex
+    \XeTeXdefaultencoding "utf-8"
+  \fi
+  \endgroup
+}
+
+\def\cmfu@settitle#1{\title{#1}
+  \maketitle
+  \ifxetex
+    \XeTeXdefaultencoding "utf-8"
+  \fi
+  \endgroup\maketitle\vfil
+  \tableofcontents\vfil\newpage\begingroup
+  \ifxetex
+    \XeTeXdefaultencoding "cp936"
+  \fi
+  \endlinechar=`\^^M
+  \cmfu@setcatcode
+  \immediate\write16{Done generating title and toc}
+}
+
 \def\cmfu@testcopyright#1Copyright#2\@nil{
   \if!#2!
     \cmfu@resultfalse
@@ -78,116 +206,5 @@
 \def\cmfu@stripqdzwwsqfb#1起#2点#3中#4文#5网#6授权发布#7\@nil{#1#7}
 \def\cmfu@stripqdzww#1起#2点#3中#4文#5#6#7网#8\@nil{#1#8}
 \def\cmfu@striphsjzcmfu#1好书尽在www.cmfu.com#2\@nil{#1#2}
-\def\cmfu@stripads#1{
-  \edef\cmfu@tmp{#1}
-  \expandafter\cmfu@testqdzwwsqfb\cmfu@tmp 起8K点8K中8K文8K网8K授权发\@nil
-  \ifcmfu@result
-    \edef\cmfu@tmp{\expandafter\cmfu@stripqdzwwsqfb\cmfu@tmp\@nil}
-  \fi
-  \expandafter\cmfu@testqdzww\cmfu@tmp 起8K点8K中8K文aaaa网\@nil
-  \ifcmfu@result
-    \edef\cmfu@tmp{\expandafter\cmfu@stripqdzww\cmfu@tmp\@nil}
-  \fi
-  \expandafter\cmfu@testhsjzcmfu\cmfu@tmp 好书尽在www.cmfu.\@nil
-  \ifcmfu@result
-    \edef\cmfu@tmp{\expandafter\cmfu@striphsjzcmfu\cmfu@tmp\@nil}
-  \fi
-  \edef#1{\cmfu@tmp}
-}
-{\catcode`\^^M=12
-\gdef\cmfu@newline#1^^M{
-  %#1\par
-  \if!#1!% empty
-    \ifhmode
-      \vskip -\baselineskip
-      \vskip -\parskip
-    \fi
-  \else
-    \ifx\cmfu@lastline\empty
-        \def\cmfu@lastline{#1}
-      %\leavevmode\par
-      \ifhmode
-        \vskip -\baselineskip
-        \vskip -\parskip
-      \fi
-      %\message{empty}
-    \else
-      \def\cmfu@currline{#1}
-      \expandafter\cmfu@testcopyright\cmfu@lastline Copyright\@nil
-      \ifcmfu@result % last line contains Copyright
-        \immediate\write16{Copyright encountered}
-        \expandafter\cmfu@testrightgrant\cmfu@currline 本书已获作者授权在起点\@nil
-        \ifcmfu@result % current line contains 本书已获作者授权在起点
-          \catcode`\^^M=5
-          \immediate\write16{The cmfu file ended}
-          \endinput
-        \else
-          \cmfu@processline
-        \fi
-      \else
-        \cmfu@processline
-      \fi
-    \fi
-  \fi
-}}
-
-\def\cmfu@processline{
-  %\cmfu@lastline\par
-  \expandafter\cmfu@testupdatetime\cmfu@currline 网更新时间：\@nil
-  \ifcmfu@result % new section
-    \begingroup
-      \everypar{}
-      \expandafter\section\expandafter{\cmfu@lastline}
-      \cmfu@stripads\cmfu@currline
-      \expandafter\cmfuupdate\expandafter{\cmfu@currline}\par
-    \endgroup
-    \def\cmfu@currline{}
-  \else
-    \cmfu@lastline\par
-  \fi
-  %\immediate\write16{Last line: \cmfu@lastline}
-  \cmfu@stripads\cmfu@currline
-  \edef\cmfu@lastline{\cmfu@currline}
-}
-
-\def\cmfu@seteverypar{
-  \everypar{\cmfu@newline}
-}
-
-\def\cmfu@setcatcode{\let\do\@makeother\dospecials
-  \count@=\lccode`\~
-  \catcode`\&=\active \lccode`\~=`\&
-  \lowercase{\let~=\cmfu@amp}
-  \catcode`\<=\active \lccode`\~=`\<
-  \lowercase{\let~=\cmfu@langle}
-  %\catcode`\^^M=\active \lccode`\~=`\^^M
-  %\lowercase{\let~=\cmfu@newline}
-  \@makeother\^^M
-  \catcode`\　=10% make fullwidth space space
-  \catcode`\[=\active \lccode`\~=`\[
-  \lowercase{\let~=\cmfu@lbrack}
-}
-
-\newcommand{\cmfuinput}[1]{
-  \begingroup
-  \XeTeXdefaultencoding "cp936"
-  \endlinechar=`\^^M
-  \cmfu@setcatcode
-  \immediate\write16{Start parsing file...}
-  \input #1
-  \XeTeXdefaultencoding "utf-8"
-  \endgroup
-}
-
-\def\cmfu@settitle#1{\title{#1}
-  \maketitle
-  \XeTeXdefaultencoding "utf-8"
-  \endgroup\maketitle\vfil
-  \tableofcontents\vfil\newpage\begingroup
-  \XeTeXdefaultencoding "cp936"
-  \endlinechar=`\^^M
-  \cmfu@setcatcode
-  \immediate\write16{Done generating title and toc}
-}
 
 \endinput
