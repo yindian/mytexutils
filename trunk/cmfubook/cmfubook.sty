@@ -9,6 +9,7 @@
 %                       Added html special (&) handling. Use \cmfu@start to
 %                       avoid empty first page when use LaTeX+CJK. Several bug
 %                       fixed (\expandafter, \catcode when \tableofcontents).
+%               071219  Fixed bug of ads not stripped after the "update time".
 \NeedsTeXFormat{LaTeX2e}[1996/12/01]
 \def\filedate{2007/12/18}
 \ProvidesPackage{cmfubook}[\filedate]
@@ -58,8 +59,10 @@
   \fi
   \expandafter\cmfu@testhsjzcmfu\cmfu@tmp 好书尽在www.cmfu.\@nil
   \ifcmfu@result
+    %\immediate\write16{Strip 好书尽在 in: \cmfu@tmp}
     \expandafter\expandafter\expandafter\def\expandafter\expandafter\expandafter\cmfu@tmp\expandafter\expandafter\expandafter{\expandafter\cmfu@striphsjzcmfu\cmfu@tmp\@nil}
     %\edef\cmfu@tmp{\expandafter\cmfu@striphsjzcmfu\cmfu@tmp\@nil}
+    %\immediate\write16{After that: \cmfu@tmp}
   \fi
   \let#1\cmfu@tmp
 }
@@ -74,7 +77,8 @@
     \fi
   \else
     \ifx\cmfu@lastline\empty
-        \def\cmfu@lastline{#1}
+      \def\cmfu@lastline{#1}
+      \cmfu@stripads\cmfu@lastline
       %\leavevmode\par
       \ifhmode
         \vskip -\baselineskip
