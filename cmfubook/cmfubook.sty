@@ -10,8 +10,9 @@
 %                       avoid empty first page when use LaTeX+CJK. Several bug
 %                       fixed (\expandafter, \catcode when \tableofcontents).
 %               071219  Fixed bug of ads not stripped after the "update time".
+%               071221  Reset \endlinechar at end of file. Minor changes.
 \NeedsTeXFormat{LaTeX2e}[1996/12/01]
-\def\filedate{2007/12/18}
+\def\filedate{2007/12/21}
 \ProvidesPackage{cmfubook}[\filedate]
 \RequirePackage{ifxetex}
 \ifxetex
@@ -109,7 +110,7 @@
 
 \def\cmfu@processline{
   %\cmfu@lastline\par
-  \expandafter\cmfu@testupdatetime\cmfu@currline 网更新时间：\@nil
+  \expandafter\cmfu@testupdatetime\cmfu@currline 更新时间：\@nil
   \ifcmfu@result % new section
     \begingroup
       \everypar{}
@@ -198,7 +199,7 @@
     \cmfu@resulttrue
   \fi
 }
-\def\cmfu@testupdatetime#1网更新时间：#2\@nil{
+\def\cmfu@testupdatetime#1更新时间：#2\@nil{
   \if!#2!
     \cmfu@resultfalse
   \else
@@ -231,7 +232,7 @@
   \fi
 }
 \def\cmfu@stripqdzwwsqfb#1起#2点#3中#4文#5网#6授权发布#7\@nil{#1#7}
-\def\cmfu@stripqdzww#1起#2点#3中#4文#5#6#7网#8\@nil{#1#8}
+\def\cmfu@stripqdzww#1起#2点#3中#4文#5网#6\@nil{#1#6}
 \def\cmfu@striphsjzcmfu#1好书尽在www.cmfu.com#2\@nil{#1#2}
 
 \def\cmfu@defhtmlspec#1{\@namedef{cmfu@html@#1}{#1}}
@@ -257,7 +258,7 @@
           \ifx\cmfu@tmp\cmfu@html@nbsp
             \space
           \else
-            \&\##1;
+            \&#1;
           \fi
         \fi
       \fi
@@ -265,4 +266,5 @@
   \fi
 }
 
+\endlinechar=`\^^M
 \endinput
