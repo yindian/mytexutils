@@ -1,0 +1,57 @@
+%       paranote.sty    coded by YIN Dian
+%       Typesetting paragraph annotation (duan4 zhu4)
+%       Hist:   080103  First coded. 
+\catcode`\@=11
+\ifx\paranote@revision\@undefined
+\def\paranote@revision{08/01/03}
+\ifx\ProvidesPackage\@undefined
+\else
+  \ProvidesPackage{paranote}[\paranote@revision]
+\fi
+
+\newtoks\everyparanotelist
+\newtoks\everyparanote
+\newcount\dzh@count
+\long\def\dzh@parlist{}
+\long\def\dzh@p@rlist{}
+
+\def\withparanote{%
+  \let\dzh@oldpar\par
+  \def\par{\dzh@oldpar\showparanotes}%
+}
+
+\def\paranote#1{%
+  \advance\dzh@count by 1
+  \paranotemark
+  \expandafter\def\expandafter\dzh@parlist\expandafter{\dzh@parlist
+  \paran@te{#1}}%
+}
+
+\def\paran@te#1{%
+  \advance\dzh@count by 1
+  \leavevmode\hbox{\paranotesymbol\dzh@count}%
+  \preparanotehook #1\postparanotehook
+}
+
+\def\paranotesymbol#1{(\number#1). }
+\def\paranotemark{$\m@th{}^{\number\dzh@count}$}
+
+\def\preparanotehook{}
+\def\postparanotehook{}
+
+\def\showparanotes{%
+  \ifx\dzh@parlist\empty
+  \else
+    \let\par\dzh@oldpar
+    \the\everyparanotelist
+    \def\par{\dzh@oldpar\showparanotes}%
+    \let\dzh@p@rlist\dzh@parlist
+    \def\dzh@parlist{}%
+    \dzh@count=0
+    \dzh@p@rlist
+    \dzh@count=0
+    \par
+  \fi
+}
+\fi
+\endinput
