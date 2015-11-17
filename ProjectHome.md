@@ -1,0 +1,1 @@
+This project hosts several recent TeX/LaTeX macros for my personal usage. Thanks for Google's code hosting service.
